@@ -7,45 +7,120 @@
 // 测试链接 : https://leetcode.cn/problems/find-peak-element/
 
 #include <vector>
+#include <iostream>
+#include <string>
+#include <climits>
 
 using namespace std;
 
-class Solution
+const string RESET = "\033[0m";
+const string BOLD = "\033[1m";
+const string CYAN = "\033[36m";
+const string GREEN = "\033[32m";
+const string RED = "\033[31m";
+const string YELLOW = "\033[33m";
+
+int findPeakElement(vector<int> &arr)
 {
-public:
-    int findPeakElement(vector<int> &arr)
+    int n = arr.size();
+    if (n == 0)
+        return -1;
+    if (n == 1)
+        return 0; // 单元素直接返回索引0
+    int left = 0, right = n - 1;
+    while (left < right)
     {
-        int n = arr.size();
-        if (arr.size() == 1)
+        int mid = left + (right - left) / 2;
+        if (arr[mid] > arr[mid + 1])
         {
-            return 0;
+            // 峰值在左侧（包括mid）
+            right = mid;
         }
-        if (arr[0] > arr[1])
+        else
         {
-            return 0;
+            // 峰值在右侧
+            left = mid + 1;
         }
-        if (arr[n - 1] > arr[n - 2])
-        {
-            return n - 1;
-        }
-        int l = 1, r = n - 2, m = 0, ans = -1;
-        while (l <= r)
-        {
-            m = (l + r) / 2;
-            if (arr[m - 1] > arr[m])
-            {
-                r = m - 1;
-            }
-            else if (arr[m] < arr[m + 1])
-            {
-                l = m + 1;
-            }
-            else
-            {
-                ans = m;
-                break;
-            }
-        }
-        return ans;
     }
-};
+    return left;
+}
+
+bool isPeak(const vector<int> &arr, int idx)
+{
+    if (idx < 0 || idx >= (int)arr.size())
+    {
+        return false;
+    }
+    int left = (idx - 1 >= 0) ? arr[idx - 1] : INT_MIN;
+    int right = (idx + 1 < (int)arr.size()) ? arr[idx + 1] : INT_MIN;
+    return arr[idx] > left && arr[idx] > right;
+}
+
+void printArray(const vector<int> &arr)
+{
+    cout << "[";
+    for (int i = 0; i < (int)arr.size(); i++)
+    {
+        cout << arr[i] << (i + 1 == (int)arr.size() ? "" : ", ");
+    }
+    cout << "]";
+}
+
+bool runCase(const string &name, vector<int> arr)
+{
+    int idx = findPeakElement(arr);
+    bool ok = isPeak(arr, idx);
+    int leftValue = (idx - 1 >= 0 && idx - 1 < (int)arr.size()) ? arr[idx - 1] : INT_MIN;
+    int rightValue = (idx + 1 >= 0 && idx + 1 < (int)arr.size()) ? arr[idx + 1] : INT_MIN;
+
+    cout << "\n"
+         << CYAN << BOLD << "---------------- " << name << " ----------------" << RESET << "\n";
+    cout << "数组: ";
+    printArray(arr);
+    cout << "\n返回索引: " << idx;
+    if (idx >= 0 && idx < (int)arr.size())
+    {
+        cout << "，对应值: " << arr[idx];
+    }
+    cout << "\n左邻值: " << (leftValue == INT_MIN ? -2147483648 : leftValue)
+         << "，右邻值: " << (rightValue == INT_MIN ? -2147483648 : rightValue) << "\n";
+    cout << "判定条件: arr[idx] > left && arr[idx] > right\n";
+    cout << "结果: " << (ok ? (GREEN + string("PASS") + RESET) : (RED + string("FAIL") + RESET)) << "\n";
+
+    return ok;
+}
+
+int main()
+{
+    int total = 0;
+    int pass = 0;
+
+    cout << BOLD << YELLOW << "===== findPeakElement 测试开始 =====" << RESET << "\n";
+
+    total++;
+    pass += runCase("用例1: 单元素", {5}) ? 1 : 0;
+    total++;
+    pass += runCase("用例2: 峰值在左边界", {9, 7, 3, 1}) ? 1 : 0;
+    total++;
+    pass += runCase("用例3: 峰值在右边界", {1, 3, 7, 9}) ? 1 : 0;
+    total++;
+    pass += runCase("用例4: 峰值在中间", {1, 3, 2, 1}) ? 1 : 0;
+    total++;
+    pass += runCase("用例5: 多个峰值", {1, 4, 2, 6, 3, 5, 1}) ? 1 : 0;
+    total++;
+    pass += runCase("用例6: 常见样例", {1, 2, 1, 3, 5, 6, 4}) ? 1 : 0;
+
+    int fail = total - pass;
+
+    cout << "\n"
+         << BOLD << YELLOW << "===== 测试汇总 =====" << RESET << "\n";
+    cout << "总用例数: " << total << "\n";
+    cout << GREEN << "通过数: " << pass << RESET << "\n";
+    cout << (fail == 0 ? GREEN : RED) << "失败数: " << fail << RESET << "\n";
+    cout << "通过率: " << (pass * 100 / total) << "%\n";
+
+    cout << "\n"
+         << BOLD << YELLOW << "===== 测试结束 =====" << RESET << "\n";
+
+    return fail == 0 ? 0 : 1;
+}
